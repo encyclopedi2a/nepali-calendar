@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">NepaliCalendar</string>
+    <string name="Baisakh">बैशाख</string>
+    <string name="Jestha">जेष्ठ</string>
+    <string name="Ashar">आषाढ</string>
+    <string name="Shrawan">श्रावन</string>
+    <string name="Bhadra">भाद्र</string>
+    <string name="Ashoj">असोज</string>
+    <string name="Kartik">कार्तिक</string>
+    <string name="Mangsir">मंसिर</string>
+    <string name="Poush">पौष</string>
+    <string name="Magh">माघ</string>
+    <string name="Falgun">फागुन</string>
+    <string name="Chaitra">चैत्र</string>
+</resources>

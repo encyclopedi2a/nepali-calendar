@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="week_name">
+        <item>आइत</item>
+        <item>सोम</item>
+        <item>मगल</item>
+        <item>बुध</item>
+        <item>बिहि</item>
+        <item>शुक्र</item>
+        <item>शनि</item>
+    </string-array>
+</resources>
