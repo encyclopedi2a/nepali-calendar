@@ -2,9 +2,9 @@ package com.ingrails.nepalicalendar.interfaces.views.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,13 +22,15 @@ public class CalendarFragment extends CalendarViewFragment {
     private RecyclerView recyclerView;
     private int noOffDays;
     private int weekStartIndex;
+    private Converter converter;
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         noOffDays = getArguments().getInt("no_of_days", -1);
         weekStartIndex = getArguments().getInt("week_start_index", -1);
-        Log.e("index", String.valueOf(weekStartIndex));
+        converter = new Converter();
     }
 
     @Nullable
@@ -84,9 +86,8 @@ public class CalendarFragment extends CalendarViewFragment {
                 vhHeader.week.setText(weekDays[position]);
             } else if (holder instanceof VHContent) {
                 VHContent vhContent = (VHContent) holder;
-                if (position - 7 < noOffDays) {
-                    Converter converter = new Converter();
-                    vhContent.day.setText(converter.getEnglishEquivalentNepaliDay(position - 6));
+                if (position - 7 < noOffDays + (weekStartIndex - 1)) {
+                    vhContent.day.setText(converter.getEnglishEquivalentNepaliDay(position - 5 - weekStartIndex));
                 }
             }
         }
@@ -105,7 +106,7 @@ public class CalendarFragment extends CalendarViewFragment {
 
         @Override
         public int getItemCount() {
-            return 42;
+            return 49;
         }
 
 
@@ -115,6 +116,12 @@ public class CalendarFragment extends CalendarViewFragment {
             VHContent(View view) {
                 super(view);
                 day = view.findViewById(R.id.day);
+                day.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        day.setBackground(ContextCompat.getDrawable(getActivity(), R.drawable.circle));
+                    }
+                });
             }
         }
 

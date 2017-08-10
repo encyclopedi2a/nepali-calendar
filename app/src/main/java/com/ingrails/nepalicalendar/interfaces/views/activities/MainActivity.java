@@ -14,14 +14,18 @@ import com.ingrails.nepalicalendar.interfaces.converter.Converter;
 import com.ingrails.nepalicalendar.interfaces.views.fragments.CalendarFragment;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
+@SuppressWarnings("DanglingJavadoc")
 public class MainActivity extends CalendarViewActivity implements ViewPager.OnPageChangeListener, View.OnClickListener {
     private ViewPager viewPager;
     private Converter converter;
-    private TextView monthName;
+    private TextView monthName, englishMonthName;
     private ImageView previousMonth, nextMonth;
-
+    private int selectedEnglishMonthPosition = -1, lastSelectedPosition = 0;
+    private int currentEnglishYear;
+    private boolean isPoushSelected = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +42,7 @@ public class MainActivity extends CalendarViewActivity implements ViewPager.OnPa
         monthName = (TextView) findViewById(R.id.month_name);
         previousMonth = (ImageView) findViewById(R.id.previous_month);
         nextMonth = (ImageView) findViewById(R.id.next_month);
+        englishMonthName = (TextView) findViewById(R.id.english_month_name);
     }
 
     @Override
@@ -50,6 +55,7 @@ public class MainActivity extends CalendarViewActivity implements ViewPager.OnPa
     private void setUpViewPager() {
         converter = new Converter(this);
         monthName.setText(converter.getTitle(0));
+        currentEnglishYear = Calendar.getInstance().get(Calendar.YEAR);
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(viewPagerAdapter);
         for (int i = 0; i < converter.getCalendarSize(); i++) {
@@ -61,6 +67,7 @@ public class MainActivity extends CalendarViewActivity implements ViewPager.OnPa
             viewPagerAdapter.addFragment(fragment);
         }
         viewPagerAdapter.notifyDataSetChanged();
+        viewPager.setCurrentItem(74 * 12);
     }
 
 
@@ -72,6 +79,46 @@ public class MainActivity extends CalendarViewActivity implements ViewPager.OnPa
     @Override
     public void onPageSelected(int position) {
         monthName.setText(converter.getTitle(position));
+        if (position > lastSelectedPosition) {
+            /**
+             * for english year
+             */
+            if (converter.getTitle(position).split("  ")[1].equals(getString(R.string.Poush))) {
+                isPoushSelected = true;
+                currentEnglishYear++;
+            } else {
+                isPoushSelected = false;
+            }
+            /**
+             * for english month
+             */
+            selectedEnglishMonthPosition++;
+        } else {
+            /**
+             * for english year
+             */
+            if (converter.getTitle(position).split("  ")[1].equals(getString(R.string.Poush))) {
+                isPoushSelected = true;
+                //currentEnglishYear--;
+            } else {
+                if (isPoushSelected) {
+                    currentEnglishYear--;
+                }
+                isPoushSelected = false;
+            }
+            /**
+             * for english month
+             */
+            selectedEnglishMonthPosition--;
+        }
+        if (selectedEnglishMonthPosition > 11) {
+            selectedEnglishMonthPosition = 0;
+        }
+        if (selectedEnglishMonthPosition < 0) {
+            selectedEnglishMonthPosition = 11;
+        }
+        englishMonthName.setText(String.format(" - %s %s", converter.getNepaliEquivalentEnglishMonth(converter.getNepaliMonth(selectedEnglishMonthPosition)), currentEnglishYear));
+        lastSelectedPosition = position;
     }
 
     @Override

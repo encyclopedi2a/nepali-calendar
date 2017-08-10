@@ -1,6 +1,7 @@
 package com.ingrails.nepalicalendar.interfaces.converter;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.ingrails.nepalicalendar.R;
 import com.ingrails.nepalicalendar.interfaces.models.DateModel;
@@ -19,14 +20,18 @@ import java.util.Map;
  * bs to ad converter
  */
 
+@SuppressWarnings("DanglingJavadoc")
 public class Converter {
     private Map<Integer, int[]> daysInMonthMap = new LinkedHashMap<>();
     private Map<Integer, int[]> startWeekDayMonthMap = new LinkedHashMap<>();
     private Map<Integer, String> englishEquivalentNepaliYear = new LinkedHashMap<>();
     private Map<Integer, String> englishEquivalentNepaliDay = new LinkedHashMap<>();
+    private Map<String, String> nepaliEquivalentEnglishMonth = new LinkedHashMap<>();
+    private Map<String, Integer> nepaliMonthIndex = new LinkedHashMap<>();
     private List<String> nepaliYearWithMonth = new ArrayList<>();
     private List<Integer> noOfDaysInSpecificMonth = new ArrayList<>();
     private List<Integer> startOfWeekInSpecificMonth = new ArrayList<>();
+
 
     private Context context;
 
@@ -42,8 +47,24 @@ public class Converter {
         initializeNepaliDateListWithYear();
         initializeNoOfDaysInSpecificMonth();
         initializeStartOfWeekInSpecificMonth();
+        initializeNepaliEquivalentEnglishMonth();
+        initializeNepaliMonthIndex();
+        getCurrentMonth();
     }
 
+    public int getCurrentMonth() {
+        /**
+         * getTodayDate
+         */
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH) + 1;
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        Log.e("month", month + "/" + year + "/" + day);
+        DateModel dateModel = getNepaliDate(year, month, day);
+        Log.e("test", dateModel.getYear() + "/" + (dateModel.getMonth() + 1) + "/" + dateModel.getDay());
+        return 0;
+    }
 
     public int getNumberOfDaysInSpecificMonth(int position) {
         return noOfDaysInSpecificMonth.get(position);
@@ -55,6 +76,29 @@ public class Converter {
 
     public String getEnglishEquivalentNepaliDay(int englishDay) {
         return englishEquivalentNepaliDay.get(englishDay);
+    }
+
+    public String getTitle(int position) {
+        return nepaliYearWithMonth.get(position);
+    }
+
+    public String getNepaliEquivalentEnglishMonth(String month) {
+        return nepaliEquivalentEnglishMonth.get(month);
+    }
+
+    public int getNepaliMonthIndex(String month) {
+        return nepaliMonthIndex.get(month);
+    }
+
+    public String getNepaliEquivalentEnglishYear(String nepaliYear) {
+        int englishYear = -1;
+        for (Map.Entry<Integer, String> entry : englishEquivalentNepaliYear.entrySet()) {
+            if (nepaliYear.equals(entry.getValue())) {
+                englishYear = entry.getKey();
+                break;
+            }
+        }
+        return String.valueOf(englishYear);
     }
 
     private void initializeNoOfDaysInSpecificMonth() {
@@ -94,8 +138,34 @@ public class Converter {
         }
     }
 
-    public String getTitle(int position) {
-        return nepaliYearWithMonth.get(position);
+    private void initializeNepaliMonthIndex() {
+        nepaliMonthIndex.put(context.getString(R.string.Baisakh), 1);
+        nepaliMonthIndex.put(context.getString(R.string.Jestha), 2);
+        nepaliMonthIndex.put(context.getString(R.string.Ashar), 3);
+        nepaliMonthIndex.put(context.getString(R.string.Shrawan), 4);
+        nepaliMonthIndex.put(context.getString(R.string.Bhadra), 5);
+        nepaliMonthIndex.put(context.getString(R.string.Ashoj), 6);
+        nepaliMonthIndex.put(context.getString(R.string.Kartik), 7);
+        nepaliMonthIndex.put(context.getString(R.string.Mangsir), 8);
+        nepaliMonthIndex.put(context.getString(R.string.Poush), 9);
+        nepaliMonthIndex.put(context.getString(R.string.Magh), 10);
+        nepaliMonthIndex.put(context.getString(R.string.Falgun), 11);
+        nepaliMonthIndex.put(context.getString(R.string.Chaitra), 12);
+    }
+
+    private void initializeNepaliEquivalentEnglishMonth() {
+        nepaliEquivalentEnglishMonth.put(context.getString(R.string.Baisakh), "Apr/May");
+        nepaliEquivalentEnglishMonth.put(context.getString(R.string.Jestha), "May/Jun");
+        nepaliEquivalentEnglishMonth.put(context.getString(R.string.Ashar), "Jun/Jul");
+        nepaliEquivalentEnglishMonth.put(context.getString(R.string.Shrawan), "Jul/Aug");
+        nepaliEquivalentEnglishMonth.put(context.getString(R.string.Bhadra), "Aug/Sep");
+        nepaliEquivalentEnglishMonth.put(context.getString(R.string.Ashoj), "Sep/Oct");
+        nepaliEquivalentEnglishMonth.put(context.getString(R.string.Kartik), "Oct/Nov");
+        nepaliEquivalentEnglishMonth.put(context.getString(R.string.Mangsir), "Nov/Dec");
+        nepaliEquivalentEnglishMonth.put(context.getString(R.string.Poush), "Dec/Jan");
+        nepaliEquivalentEnglishMonth.put(context.getString(R.string.Magh), "Jan/Feb");
+        nepaliEquivalentEnglishMonth.put(context.getString(R.string.Falgun), "Feb/Mar");
+        nepaliEquivalentEnglishMonth.put(context.getString(R.string.Chaitra), "Mar/Apr");
     }
 
     private void initializeEnglishEquivalentNepaliDay() {
@@ -415,7 +485,6 @@ public class Converter {
 
     /*convert nepali date into english date*/
     public DateModel getEnglishDate(int nepYY, int nepMM, int nepDD) {
-
         if (isNepDateInRange(nepYY, nepMM, nepDD)) {
 
             int startingEngYear = 1943;
@@ -457,7 +526,7 @@ public class Converter {
             engYY = startingEngYear;
             engMM = startingEngMonth;
             engDD = startingEngDay;
-            int endDayOfMonth = 0;
+            int endDayOfMonth;
             int dayOfWeek = startingDayOfWeek;
             while (totalNepDaysCount != 0) {
                 if (isLeapYear(engYY)) {
@@ -557,7 +626,7 @@ public class Converter {
     }
 
     /*returns nepali month*/
-    private String getNepaliMonth(int month) {
+    public String getNepaliMonth(int month) {
         switch (month) {
             case 0:
                 return context.getString(R.string.Baisakh);
@@ -587,46 +656,6 @@ public class Converter {
         return null;
     }
 
-    public int getNepaliMonthIndex(String month) {
-        if (month.equals(context.getString(R.string.Baisakh))) {
-            return 1;
-        }
-        if (month.equals(context.getString(R.string.Jestha))) {
-            return 2;
-        }
-        if (month.equals(context.getString(R.string.Ashar))) {
-            return 3;
-        }
-        if (month.equals(context.getString(R.string.Shrawan))) {
-            return 4;
-        }
-        if (month.equals(context.getString(R.string.Bhadra))) {
-            return 5;
-        }
-        if (month.equals(context.getString(R.string.Ashoj))) {
-            return 6;
-        }
-        if (month.equals(context.getString(R.string.Kartik))) {
-            return 7;
-        }
-        if (month.equals(context.getString(R.string.Mangsir))) {
-            return 8;
-        }
-        if (month.equals(context.getString(R.string.Poush))) {
-            return 9;
-        }
-        if (month.equals(context.getString(R.string.Magh))) {
-            return 10;
-        }
-        if (month.equals(context.getString(R.string.Falgun))) {
-            return 11;
-        }
-        if (month.equals(context.getString(R.string.Chaitra))) {
-            return 12;
-        }
-        return -1;
-    }
-
 
     /*check if english date is in the range of conversion*/
     private static boolean isEngDateInRange(int yy, int mm, int dd) {
@@ -636,16 +665,6 @@ public class Converter {
     /*check if nepali date is in the range of conversion*/
     private static boolean isNepDateInRange(int yy, int mm, int dd) {
         return (yy >= 2000 && yy <= 2090) && (mm >= 1 && mm <= 12) && (dd >= 1 && dd <= 32);
-    }
-
-    /*returns the day of week start for 1st nepali month*/
-    public int getFirstWeekDayMonth(int yy, int mm) {
-        return startWeekDayMonthMap.get(yy)[mm];
-    }
-
-    /*returns the no of days in a particular month of a nepali year*/
-    public int noOfDaysInMonth(int yy, int mm) {
-        return daysInMonthMap.get(yy)[mm];
     }
 
     public int getCalendarSize() {
