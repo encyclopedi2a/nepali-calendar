@@ -10,7 +10,6 @@
         android:layout_height="match_parent"
         android:background="@android:color/transparent"
         android:gravity="center"
-        android:textColor="#ffffff"
         android:textSize="12sp"
         android:padding="10dp"
         android:textStyle="bold" />

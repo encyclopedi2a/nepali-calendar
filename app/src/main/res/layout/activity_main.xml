@@ -62,22 +62,11 @@
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="260dp"
-        android:background="#367fa9" />
+        android:background="#ffffff" />
 
-    <LinearLayout
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:padding="10dp">
+        android:layout_height="match_parent" />
 
-
-    </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_gravity="bottom"
-        android:layout_marginTop="5dp"
-        android:background="#f2f2f2" />
 </LinearLayout>

@@ -1,5 +1,6 @@
 package com.ingrails.nepalicalendar.interfaces.views.fragments;
 
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -29,6 +30,7 @@ public class CalendarFragment extends CalendarViewFragment implements ViewTreeOb
     private int weekStartIndex;
     private Converter converter;
     private LinearLayout parent;
+
 
     public void onUpdateView() {
         if (recyclerView != null)
@@ -164,8 +166,14 @@ public class CalendarFragment extends CalendarViewFragment implements ViewTreeOb
             if (holder instanceof VHHeader) {
                 VHHeader vhHeader = (VHHeader) holder;
                 vhHeader.week.setText(weekDays[position]);
+                if (position != 0 && position % 6 == 0) {
+                    vhHeader.week.setTextColor(Color.RED);
+                }
             } else if (holder instanceof VHContent) {
                 VHContent vhContent = (VHContent) holder;
+                if (position == 13 || position == 20 || position == 27 || position == 34 || position == 41 || position == 48) {
+                    vhContent.day.setTextColor(Color.RED);
+                }
                 if (position - 7 < noOffDays + (weekStartIndex - 1)) {
                     vhContent.day.setText(converter.getEnglishEquivalentNepaliDay(position - 5 - weekStartIndex));
                     vhContent.day.setTag(vhContent.day.getText().toString());
@@ -200,28 +208,31 @@ public class CalendarFragment extends CalendarViewFragment implements ViewTreeOb
                 day.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if (!TextUtils.isEmpty(day.getText().toString())) {
-                            for (int i = 0; i < recyclerView.getChildCount(); i++) {
-                                LinearLayout linearLayout = (LinearLayout) recyclerView.getChildAt(i);
-                                TextView textView = linearLayout.findViewById(R.id.day);
-                                if (textView != null)
-                                    if (!TextUtils.isEmpty(textView.getText().toString())) {
-                                        if (i != getAdapterPosition() && textView.getTag() != null && !textView.getTag().toString().equals("current_day_tag")) {
-                                            textView.setBackground(null);
-                                        } else {
-                                            textView.setBackground(ContextCompat.getDrawable(getActivity(), R.drawable.circle));
-                                        }
-                                    }
-                            }
-                        }
+                        decorateView();
                     }
                 });
+            }
+
+            private void decorateView() {
+                if (!TextUtils.isEmpty(day.getText().toString())) {
+                    for (int i = 0; i < recyclerView.getChildCount(); i++) {
+                        LinearLayout linearLayout = (LinearLayout) recyclerView.getChildAt(i);
+                        TextView textView = linearLayout.findViewById(R.id.day);
+                        if (textView != null)
+                            if (!TextUtils.isEmpty(textView.getText().toString())) {
+                                if (i != getAdapterPosition() && textView.getTag() != null && !textView.getTag().toString().equals("current_day_tag")) {
+                                    textView.setBackground(null);
+                                } else {
+                                    textView.setBackground(ContextCompat.getDrawable(getActivity(), R.drawable.circle));
+                                }
+                            }
+                    }
+                }
             }
         }
 
         class VHHeader extends RecyclerView.ViewHolder {
             private TextView week;
-
 
             VHHeader(View view) {
                 super(view);
