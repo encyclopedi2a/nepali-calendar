@@ -16,6 +16,8 @@ import com.ingrails.nepalicalendar.interfaces.views.fragments.CalendarFragment;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 @SuppressWarnings("DanglingJavadoc")
 public class MainActivity extends CalendarViewActivity implements ViewPager.OnPageChangeListener, View.OnClickListener {
@@ -68,6 +70,19 @@ public class MainActivity extends CalendarViewActivity implements ViewPager.OnPa
         }
         viewPagerAdapter.notifyDataSetChanged();
         viewPager.setCurrentItem(74 * 12);
+        final Timer timer = new Timer();
+        final int[] count = {0};
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if (count[0] < 3) {
+                    viewPager.setCurrentItem(viewPager.getCurrentItem() + 1);
+                    count[0]++;
+                } else {
+                    timer.cancel();
+                }
+            }
+        }, 0, 1);
     }
 
 

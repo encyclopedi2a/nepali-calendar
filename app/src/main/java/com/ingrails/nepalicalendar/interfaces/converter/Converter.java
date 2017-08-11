@@ -1,7 +1,6 @@
 package com.ingrails.nepalicalendar.interfaces.converter;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.ingrails.nepalicalendar.R;
 import com.ingrails.nepalicalendar.interfaces.models.DateModel;
@@ -49,10 +48,10 @@ public class Converter {
         initializeStartOfWeekInSpecificMonth();
         initializeNepaliEquivalentEnglishMonth();
         initializeNepaliMonthIndex();
-        getCurrentMonth();
+        getCurrentNepaliDate();
     }
 
-    public int getCurrentMonth() {
+    public DateModel getCurrentNepaliDate() {
         /**
          * getTodayDate
          */
@@ -60,14 +59,15 @@ public class Converter {
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH) + 1;
         int day = calendar.get(Calendar.DAY_OF_MONTH);
-        Log.e("month", month + "/" + year + "/" + day);
-        DateModel dateModel = getNepaliDate(year, month, day);
-        Log.e("test", dateModel.getYear() + "/" + (dateModel.getMonth() + 1) + "/" + dateModel.getDay());
-        return 0;
+        return getNepaliDate(year, month, day);
     }
 
     public int getNumberOfDaysInSpecificMonth(int position) {
         return noOfDaysInSpecificMonth.get(position);
+    }
+
+    public String getEnglishEquivalentNepaliYear(int englishYear) {
+        return englishEquivalentNepaliYear.get(englishYear);
     }
 
     public int getStartOfWeekInSpecificMonth(int position) {
@@ -136,6 +136,17 @@ public class Converter {
                 position++;
             }
         }
+    }
+
+    public String getNepaliMonthByIndex(int index) {
+        String nepaliMonth = null;
+        for (Map.Entry<String, Integer> map : nepaliMonthIndex.entrySet()) {
+            if (index == map.getValue()) {
+                nepaliMonth = map.getKey();
+                break;
+            }
+        }
+        return nepaliMonth;
     }
 
     private void initializeNepaliMonthIndex() {

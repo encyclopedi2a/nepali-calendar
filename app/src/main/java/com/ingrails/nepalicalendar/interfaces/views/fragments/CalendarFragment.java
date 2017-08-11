@@ -1,29 +1,39 @@
 package com.ingrails.nepalicalendar.interfaces.views.fragments;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.ingrails.nepalicalendar.R;
 import com.ingrails.nepalicalendar.interfaces.converter.Converter;
+import com.ingrails.nepalicalendar.interfaces.models.DateModel;
 
 /**
  * Created by gokarna on 8/7/17.
  * fragment for calendar
  */
 
-public class CalendarFragment extends CalendarViewFragment {
+public class CalendarFragment extends CalendarViewFragment implements ViewTreeObserver.OnGlobalLayoutListener {
     private RecyclerView recyclerView;
     private int noOffDays;
     private int weekStartIndex;
     private Converter converter;
+    private LinearLayout parent;
 
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -47,12 +57,19 @@ public class CalendarFragment extends CalendarViewFragment {
     @Override
     protected void initiliseView(View view) {
         recyclerView = view.findViewById(R.id.recycler_view);
+        parent = view.findViewById(R.id.parent);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
     }
 
     @Override
     protected void initialiseListener() {
-
+        parent.getViewTreeObserver().addOnGlobalLayoutListener(this);
     }
+
 
     private void setUpRecyclerView() {
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 7);
@@ -60,6 +77,57 @@ public class CalendarFragment extends CalendarViewFragment {
         recyclerView.setHasFixedSize(true);
         CalendarRecyclerViewAdapter calendarRecyclerViewAdapter = new CalendarRecyclerViewAdapter();
         recyclerView.setAdapter(calendarRecyclerViewAdapter);
+    }
+
+    @Override
+    public void onGlobalLayout() {
+        new CurrentDateSelectorTask().execute();
+    }
+
+    private class CurrentDateSelectorTask extends AsyncTask<Void, Void, Void> {
+        private String nepaliDay = "";
+        private String nepaliMonth = "";
+        private String nepaliYear = "";
+        private TextView title;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            if (getActivity() != null)
+                title = getActivity().findViewById(R.id.month_name);
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            if (getActivity() != null) {
+                Converter converter = new Converter(getActivity());
+                DateModel dateModel = converter.getCurrentNepaliDate();
+                int year = dateModel.getYear();
+                int month = dateModel.getMonth() + 1;
+                int day = dateModel.getDay();
+                nepaliMonth = converter.getNepaliMonthByIndex(month);
+                nepaliYear = converter.getEnglishEquivalentNepaliYear(year);
+                nepaliDay = CalendarFragment.this.converter.getEnglishEquivalentNepaliDay(day);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            if (getActivity() != null) {
+                if (title != null && (!title.getText().toString().contains(nepaliMonth) || !title.getText().toString().contains(nepaliYear))) {
+                    return;
+                }
+                for (int i = 0; i < recyclerView.getChildCount(); i++) {
+                    LinearLayout linearLayout = (LinearLayout) recyclerView.getChildAt(i);
+                    TextView textView = linearLayout.findViewById(R.id.day);
+                    if (textView != null)
+                        if (textView.getText().toString().equals(nepaliDay))
+                            textView.setBackground(ContextCompat.getDrawable(getActivity(), R.drawable.circle));
+                }
+            }
+        }
     }
 
     private class CalendarRecyclerViewAdapter extends RecyclerView.Adapter {
@@ -88,6 +156,7 @@ public class CalendarFragment extends CalendarViewFragment {
                 VHContent vhContent = (VHContent) holder;
                 if (position - 7 < noOffDays + (weekStartIndex - 1)) {
                     vhContent.day.setText(converter.getEnglishEquivalentNepaliDay(position - 5 - weekStartIndex));
+                    vhContent.day.setTag(vhContent.day.getText().toString());
                 }
             }
         }
@@ -119,7 +188,17 @@ public class CalendarFragment extends CalendarViewFragment {
                 day.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        day.setBackground(ContextCompat.getDrawable(getActivity(), R.drawable.circle));
+                        if (!TextUtils.isEmpty(day.getText().toString()))
+                            for (int i = 0; i < recyclerView.getChildCount(); i++) {
+                                LinearLayout linearLayout = (LinearLayout) recyclerView.getChildAt(i);
+                                TextView textView = linearLayout.findViewById(R.id.day);
+                                if (textView != null)
+                                    if (i != getAdapterPosition()) {
+                                        textView.setBackground(null);
+                                    } else {
+                                        textView.setBackground(ContextCompat.getDrawable(getActivity(), R.drawable.circle));
+                                    }
+                            }
                     }
                 });
             }
