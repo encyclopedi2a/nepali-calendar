@@ -28,6 +28,7 @@ public class MainActivity extends CalendarViewActivity implements ViewPager.OnPa
     private int selectedEnglishMonthPosition = -1, lastSelectedPosition = 0;
     private int currentEnglishYear;
     private boolean isPoushSelected = false;
+    private ViewPagerAdapter viewPagerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +59,7 @@ public class MainActivity extends CalendarViewActivity implements ViewPager.OnPa
         converter = new Converter(this);
         monthName.setText(converter.getTitle(0));
         currentEnglishYear = Calendar.getInstance().get(Calendar.YEAR);
-        ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+        viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(viewPagerAdapter);
         for (int i = 0; i < converter.getCalendarSize(); i++) {
             Bundle bundle = new Bundle();
@@ -94,6 +95,7 @@ public class MainActivity extends CalendarViewActivity implements ViewPager.OnPa
     @Override
     public void onPageSelected(int position) {
         monthName.setText(converter.getTitle(position));
+        ((CalendarFragment)viewPagerAdapter.getItem(position)).onUpdateView();
         if (position > lastSelectedPosition) {
             /**
              * for english year

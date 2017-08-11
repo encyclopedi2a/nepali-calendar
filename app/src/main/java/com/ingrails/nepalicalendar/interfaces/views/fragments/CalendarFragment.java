@@ -30,9 +30,17 @@ public class CalendarFragment extends CalendarViewFragment implements ViewTreeOb
     private Converter converter;
     private LinearLayout parent;
 
-    @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
+    public void onUpdateView() {
+        if (recyclerView != null)
+            for (int i = 0; i < recyclerView.getChildCount(); i++) {
+                LinearLayout linearLayout = (LinearLayout) recyclerView.getChildAt(i);
+                TextView textView = linearLayout.findViewById(R.id.day);
+                if (textView != null) {
+                    textView.setTag("");
+                    textView.setBackground(null);
+                }
+            }
+        new CurrentDateSelectorTask().execute();
     }
 
     @Override
@@ -82,6 +90,7 @@ public class CalendarFragment extends CalendarViewFragment implements ViewTreeOb
     @Override
     public void onGlobalLayout() {
         new CurrentDateSelectorTask().execute();
+        CalendarFragment.this.parent.getViewTreeObserver().removeOnGlobalLayoutListener(this);
     }
 
     private class CurrentDateSelectorTask extends AsyncTask<Void, Void, Void> {
@@ -122,9 +131,12 @@ public class CalendarFragment extends CalendarViewFragment implements ViewTreeOb
                 for (int i = 0; i < recyclerView.getChildCount(); i++) {
                     LinearLayout linearLayout = (LinearLayout) recyclerView.getChildAt(i);
                     TextView textView = linearLayout.findViewById(R.id.day);
-                    if (textView != null)
-                        if (textView.getText().toString().equals(nepaliDay))
+                    if (textView != null) {
+                        if (textView.getText().toString().equals(nepaliDay)) {
+                            textView.setTag("current_day_tag");
                             textView.setBackground(ContextCompat.getDrawable(getActivity(), R.drawable.circle));
+                        }
+                    }
                 }
             }
         }
@@ -188,17 +200,20 @@ public class CalendarFragment extends CalendarViewFragment implements ViewTreeOb
                 day.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if (!TextUtils.isEmpty(day.getText().toString()))
+                        if (!TextUtils.isEmpty(day.getText().toString())) {
                             for (int i = 0; i < recyclerView.getChildCount(); i++) {
                                 LinearLayout linearLayout = (LinearLayout) recyclerView.getChildAt(i);
                                 TextView textView = linearLayout.findViewById(R.id.day);
                                 if (textView != null)
-                                    if (i != getAdapterPosition()) {
-                                        textView.setBackground(null);
-                                    } else {
-                                        textView.setBackground(ContextCompat.getDrawable(getActivity(), R.drawable.circle));
+                                    if (!TextUtils.isEmpty(textView.getText().toString())) {
+                                        if (i != getAdapterPosition() && textView.getTag() != null && !textView.getTag().toString().equals("current_day_tag")) {
+                                            textView.setBackground(null);
+                                        } else {
+                                            textView.setBackground(ContextCompat.getDrawable(getActivity(), R.drawable.circle));
+                                        }
                                     }
                             }
+                        }
                     }
                 });
             }
