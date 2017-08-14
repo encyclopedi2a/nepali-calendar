@@ -1,4 +1,4 @@
-package com.ingrails.nepalicalendar.interfaces.converter;
+package com.ingrails.nepalicalendar.interfaces.calendar;
 
 import android.content.Context;
 
@@ -9,6 +9,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Days;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,6 +30,8 @@ public class Converter {
     private List<String> nepaliYearWithMonth = new ArrayList<>();
     private List<Integer> noOfDaysInSpecificMonth = new ArrayList<>();
     private List<Integer> startOfWeekInSpecificMonth = new ArrayList<>();
+    private Map<Integer, Integer> indexOfEnglishYearToChange = new LinkedHashMap<>();
+    private Map<Integer, Integer> AdEquivalentBsMap = new LinkedHashMap<>();
     private Context context;
 
     /**
@@ -54,7 +57,10 @@ public class Converter {
         initializeNepaliEquivalentEnglishMonth();
         initializeNepaliMonthIndex();
         getCurrentNepaliDate();
+        initialisePositionForEnglishYearToChange();
+        initializeAdEquivalentBsMap();
     }
+
 
     /**
      * provide equivalent nepali date of current english date
@@ -85,6 +91,7 @@ public class Converter {
         return englishEquivalentNepaliYear.get(englishYear);
     }
 
+
     /**
      * @param position nepali year position in year
      * @return start of week index in each month
@@ -109,27 +116,26 @@ public class Converter {
         return nepaliYearWithMonth.get(position);
     }
 
-    /**
-     * @param month nepali moth
-     * @return english month associated with nepali month
-     */
-    public String getNepaliEquivalentEnglishMonth(String month) {
-        return nepaliEquivalentEnglishMonth.get(month);
-    }
-
-    public int getNepaliMonthIndex(String month) {
-        return nepaliMonthIndex.get(month);
-    }
-
-    public String getNepaliEquivalentEnglishYear(String nepaliYear) {
-        int englishYear = -1;
-        for (Map.Entry<Integer, String> entry : englishEquivalentNepaliYear.entrySet()) {
-            if (nepaliYear.equals(entry.getValue())) {
-                englishYear = entry.getKey();
+    public int getCurrentYearIndex(int year) {
+        int i = 0;
+        for (Map.Entry<Integer, Integer> integerMap : AdEquivalentBsMap.entrySet()) {
+            if (integerMap.getKey() == year) {
                 break;
             }
+            i++;
         }
-        return String.valueOf(englishYear);
+        return i * 12;
+    }
+
+    private Map<Integer, Integer> initializeAdEquivalentBsMap() {
+        int i = 2000;
+        int j = 1943;
+        while (i < 2091) {
+            AdEquivalentBsMap.put(j, i);
+            i++;
+            j++;
+        }
+        return AdEquivalentBsMap;
     }
 
     /**
@@ -195,6 +201,28 @@ public class Converter {
         return nepaliMonth;
     }
 
+    public Map<Integer, Integer> initialisePositionForEnglishYearToChange() {
+        int initialYear = 1943;
+        int i = 0;
+        int initialValue = 8;
+        while (i < getCalendarSize()) {
+            if (i < 8) {
+                indexOfEnglishYearToChange.put(i, initialYear);
+                if (i == 7) {
+                    initialYear++;
+                }
+            } else {
+                if (i == initialValue + 12) {
+                    initialYear++;
+                    initialValue = i;
+                }
+                indexOfEnglishYearToChange.put(i, initialYear);
+            }
+            i++;
+        }
+        return indexOfEnglishYearToChange;
+    }
+
     /**
      * store key value pair with nepali month as key and number with value
      */
@@ -211,6 +239,10 @@ public class Converter {
         nepaliMonthIndex.put(context.getString(R.string.Magh), 10);
         nepaliMonthIndex.put(context.getString(R.string.Falgun), 11);
         nepaliMonthIndex.put(context.getString(R.string.Chaitra), 12);
+    }
+
+    public String[] getNepaliEquivalentEnglishMonthList() {
+        return Arrays.copyOf(nepaliEquivalentEnglishMonth.values().toArray(), nepaliEquivalentEnglishMonth.values().toArray().length, String[].class);
     }
 
     /**
@@ -707,7 +739,7 @@ public class Converter {
     /**
      * returns nepali month
      */
-    public String getNepaliMonth(int month) {
+    private String getNepaliMonth(int month) {
         switch (month) {
             case 0:
                 return context.getString(R.string.Baisakh);

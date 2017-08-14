@@ -16,8 +16,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.ingrails.nepalicalendar.R;
-import com.ingrails.nepalicalendar.interfaces.converter.Converter;
+import com.ingrails.nepalicalendar.interfaces.calendar.Converter;
 import com.ingrails.nepalicalendar.interfaces.models.DateModel;
+import com.ingrails.nepalicalendar.interfaces.utils.Constants;
 
 /**
  * Created by gokarna on 8/7/17.
@@ -48,8 +49,8 @@ public class CalendarFragment extends CalendarViewFragment implements ViewTreeOb
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        noOffDays = getArguments().getInt("no_of_days", -1);
-        weekStartIndex = getArguments().getInt("week_start_index", -1);
+        noOffDays = getArguments().getInt(Constants.NO_OF_DAYS, -1);
+        weekStartIndex = getArguments().getInt(Constants.WEEK_START_INDEX, -1);
         converter = new Converter();
     }
 

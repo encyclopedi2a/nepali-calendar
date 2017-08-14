@@ -14,15 +14,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.ingrails.nepalicalendar.R;
-import com.ingrails.nepalicalendar.interfaces.converter.Converter;
+import com.ingrails.nepalicalendar.interfaces.calendar.Converter;
 import com.ingrails.nepalicalendar.interfaces.models.CalendarModel;
+import com.ingrails.nepalicalendar.interfaces.models.DateModel;
+import com.ingrails.nepalicalendar.interfaces.utils.Constants;
 import com.ingrails.nepalicalendar.interfaces.views.fragments.CalendarFragment;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.Map;
 
 @SuppressWarnings("DanglingJavadoc")
 public class MainActivity extends CalendarViewActivity implements ViewPager.OnPageChangeListener, View.OnClickListener {
@@ -31,12 +32,12 @@ public class MainActivity extends CalendarViewActivity implements ViewPager.OnPa
     private TextView monthName, englishMonthName;
     private ImageView previousMonth, nextMonth;
     private int selectedEnglishMonthPosition = -1, lastSelectedPosition = 0;
-    private int currentEnglishYear;
-    private boolean isPoushSelected = false;
-    private ViewPagerAdapter viewPagerAdapter;
+    private Map<Integer, Integer> englishYearIndexList;
     private RecyclerView calendarRecyclerView;
     private List<CalendarModel> calendarModelList;
     private CalendarRecyclerViewAdapter calendarRecyclerViewAdapter;
+    private String[] englishMonthList;
+    private ViewPagerAdapter viewPagerAdapter;
 
 
     @Override
@@ -126,33 +127,31 @@ public class MainActivity extends CalendarViewActivity implements ViewPager.OnPa
 
     private void setUpViewPager() {
         converter = new Converter(this);
+        englishYearIndexList = converter.initialisePositionForEnglishYearToChange();
+        englishMonthList = converter.getNepaliEquivalentEnglishMonthList();
         monthName.setText(converter.getTitle(0));
-        currentEnglishYear = Calendar.getInstance().get(Calendar.YEAR);
         viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(viewPagerAdapter);
         for (int i = 0; i < converter.getCalendarSize(); i++) {
             Bundle bundle = new Bundle();
-            bundle.putInt("no_of_days", converter.getNumberOfDaysInSpecificMonth(i));
-            bundle.putInt("week_start_index", converter.getStartOfWeekInSpecificMonth(i));
+            bundle.putInt(Constants.NO_OF_DAYS, converter.getNumberOfDaysInSpecificMonth(i));
+            bundle.putInt(Constants.WEEK_START_INDEX, converter.getStartOfWeekInSpecificMonth(i));
             Fragment fragment = new CalendarFragment();
             fragment.setArguments(bundle);
             viewPagerAdapter.addFragment(fragment);
         }
         viewPagerAdapter.notifyDataSetChanged();
-        viewPager.setCurrentItem(74 * 12);
-        final Timer timer = new Timer();
-        final int[] count = {0};
-        timer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                if (count[0] < 3) {
-                    viewPager.setCurrentItem(viewPager.getCurrentItem() + 1);
-                    count[0]++;
-                } else {
-                    timer.cancel();
-                }
+        Calendar calendar = Calendar.getInstance();
+        viewPager.setCurrentItem(converter.getCurrentYearIndex(calendar.get(Calendar.YEAR)));
+        DateModel dateModel = converter.getCurrentNepaliDate();
+        while (true) {
+            String monthNameText = monthName.getText().toString();
+            if (monthNameText.contains(converter.getEnglishEquivalentNepaliYear(dateModel.getYear()))
+                    && monthNameText.contains(converter.getNepaliMonthByIndex(dateModel.getMonth() + 1))) {
+                break;
             }
-        }, 0, 1);
+            viewPager.setCurrentItem(viewPager.getCurrentItem() + 1);
+        }
     }
 
 
@@ -166,48 +165,24 @@ public class MainActivity extends CalendarViewActivity implements ViewPager.OnPa
         monthName.setText(converter.getTitle(position));
         ((CalendarFragment) viewPagerAdapter.getItem(position)).onUpdateView();
         if (position > lastSelectedPosition) {
-            /**
-             * for english year
-             */
-            if (converter.getTitle(position).split("  ")[1].equals(getString(R.string.Poush))) {
-                isPoushSelected = true;
-                currentEnglishYear++;
-            } else {
-                isPoushSelected = false;
-            }
-            /**
-             * for english month
-             */
             selectedEnglishMonthPosition++;
+            if (selectedEnglishMonthPosition > 11) selectedEnglishMonthPosition = 0;
+
         } else {
-            /**
-             * for english year
-             */
-            if (converter.getTitle(position).split("  ")[1].equals(getString(R.string.Poush))) {
-                isPoushSelected = true;
-                //currentEnglishYear--;
-            } else {
-                if (isPoushSelected) {
-                    currentEnglishYear--;
-                }
-                isPoushSelected = false;
-            }
-            /**
-             * for english month
-             */
             selectedEnglishMonthPosition--;
+            if (selectedEnglishMonthPosition < 0) selectedEnglishMonthPosition = 11;
         }
-        if (selectedEnglishMonthPosition > 11) {
-            selectedEnglishMonthPosition = 0;
-        }
-        if (selectedEnglishMonthPosition < 0) {
-            selectedEnglishMonthPosition = 11;
-        }
-        englishMonthName.setText(String.format(" - %s %s", converter.getNepaliEquivalentEnglishMonth(converter.getNepaliMonth(selectedEnglishMonthPosition)), currentEnglishYear));
+        englishMonthName.setText(String.format(" - %s %s", englishMonthList[selectedEnglishMonthPosition], englishYearIndexList.get(position)));
         lastSelectedPosition = position;
-        /**
-         * initialise event here
-         */
+        setUpRecyclerView();
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+
+    }
+
+    private void setUpRecyclerView() {
         calendarRecyclerViewAdapter.calendarModelList.clear();
         for (CalendarModel calendarModel : calendarModelList) {
             String titleArray[] = monthName.getText().toString().split("  ");
@@ -216,11 +191,6 @@ public class MainActivity extends CalendarViewActivity implements ViewPager.OnPa
             }
         }
         calendarRecyclerViewAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void onPageScrollStateChanged(int state) {
-
     }
 
     @Override
