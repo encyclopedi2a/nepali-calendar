@@ -19,6 +19,7 @@ import com.ingrails.nepalicalendar.R;
 import com.ingrails.nepalicalendar.interfaces.calendar.Converter;
 import com.ingrails.nepalicalendar.interfaces.models.DateModel;
 import com.ingrails.nepalicalendar.interfaces.utils.Constants;
+import com.ingrails.nepalicalendar.interfaces.views.activities.MainActivity;
 
 /**
  * Created by gokarna on 8/7/17.
@@ -228,6 +229,7 @@ public class CalendarFragment extends CalendarViewFragment implements ViewTreeOb
                                 }
                             }
                     }
+                    ((MainActivity) getActivity()).onDayTapListener(day.getText().toString());
                 }
             }
         }

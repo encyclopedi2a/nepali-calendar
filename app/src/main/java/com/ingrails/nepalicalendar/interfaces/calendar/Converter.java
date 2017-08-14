@@ -108,6 +108,17 @@ public class Converter {
         return englishEquivalentNepaliDay.get(englishDay);
     }
 
+    public int getNepaliEquivalentEnglishDay(String nepaliDay) {
+        int englishDay = 0;
+        for (Map.Entry<Integer, String> entry : englishEquivalentNepaliDay.entrySet()) {
+            if (entry.getValue().equals(nepaliDay)) {
+                englishDay = entry.getKey();
+                break;
+            }
+        }
+        return englishDay;
+    }
+
     /**
      * @param position month of each year position
      * @return nepali year with month appended for calendar title

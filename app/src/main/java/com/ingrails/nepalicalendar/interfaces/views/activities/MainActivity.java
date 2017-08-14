@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -26,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("DanglingJavadoc")
-public class MainActivity extends CalendarViewActivity implements ViewPager.OnPageChangeListener, View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener, View.OnClickListener {
     private ViewPager viewPager;
     private Converter converter;
     private TextView monthName, englishMonthName;
@@ -44,6 +45,14 @@ public class MainActivity extends CalendarViewActivity implements ViewPager.OnPa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        addEvent();
+        initializeView();
+        initializeListeners();
+        initialiseRecyclerView();
+        setUpViewPager();
+    }
+
+    private void addEvent() {
         calendarModelList = new ArrayList<>();
         String[] dateArray = {"२०७४", "२०७४", "२०७४", "२०७४", "२०७४", "२०७४", "२०७४", "२०७४", "२०७४", "२०७४", "२०७४", "२०७४"};
         String[] monthArray = {getString(R.string.Baisakh), getString(R.string.Jestha), getString(R.string.Ashar), getString(R.string.Shrawan), getString(R.string.Bhadra), getString(R.string.Ashoj), getString(R.string.Kartik), getString(R.string.Mangsir), getString(R.string.Poush), getString(R.string.Magh), getString(R.string.Falgun), getString(R.string.Chaitra)};
@@ -57,13 +66,8 @@ public class MainActivity extends CalendarViewActivity implements ViewPager.OnPa
             calendarModel.setDay(dayArray[i]);
             calendarModelList.add(calendarModel);
         }
-        initializeView();
-        initializeListeners();
-        initialiseRecyclerView();
-        setUpViewPager();
     }
 
-    @Override
     public void initializeView() {
         viewPager = (ViewPager) findViewById(R.id.viewPager);
         monthName = (TextView) findViewById(R.id.month_name);
@@ -73,7 +77,6 @@ public class MainActivity extends CalendarViewActivity implements ViewPager.OnPa
         calendarRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
     }
 
-    @Override
     public void initializeListeners() {
         viewPager.addOnPageChangeListener(this);
         previousMonth.setOnClickListener(this);
@@ -141,6 +144,10 @@ public class MainActivity extends CalendarViewActivity implements ViewPager.OnPa
             viewPagerAdapter.addFragment(fragment);
         }
         viewPagerAdapter.notifyDataSetChanged();
+        setCurrentDate();
+    }
+
+    private void setCurrentDate() {
         Calendar calendar = Calendar.getInstance();
         viewPager.setCurrentItem(converter.getCurrentYearIndex(calendar.get(Calendar.YEAR)));
         DateModel dateModel = converter.getCurrentNepaliDate();
@@ -153,7 +160,6 @@ public class MainActivity extends CalendarViewActivity implements ViewPager.OnPa
             viewPager.setCurrentItem(viewPager.getCurrentItem() + 1);
         }
     }
-
 
     @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -175,6 +181,18 @@ public class MainActivity extends CalendarViewActivity implements ViewPager.OnPa
         englishMonthName.setText(String.format(" - %s %s", englishMonthList[selectedEnglishMonthPosition], englishYearIndexList.get(position)));
         lastSelectedPosition = position;
         setUpRecyclerView();
+    }
+
+    public void onDayTapListener(String day) {
+        calendarRecyclerViewAdapter.calendarModelList.clear();
+        for (CalendarModel calendarModel : calendarModelList) {
+            String titleArray[] = monthName.getText().toString().split("  ");
+            if (titleArray[0].equals(calendarModel.getDate()) && titleArray[1].equals(calendarModel.getMonth())
+                    && calendarModel.getDay().equals(day)) {
+                calendarRecyclerViewAdapter.calendarModelList.add(calendarModel);
+            }
+        }
+        calendarRecyclerViewAdapter.notifyDataSetChanged();
     }
 
     @Override
